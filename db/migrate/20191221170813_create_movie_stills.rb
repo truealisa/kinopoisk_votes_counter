@@ -3,7 +3,7 @@ class CreateMovieStills < ActiveRecord::Migration[5.2]
     create_table :movie_stills do |t|
       t.string :name
       t.string :link
-      t.references :player
+      t.references :player, foreign_key: true
 
       t.timestamps
     end

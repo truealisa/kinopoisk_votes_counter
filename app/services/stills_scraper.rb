@@ -1,6 +1,6 @@
 require 'open-uri'
 
-class Scraper
+class StillsScraper
   OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
   def initialize(post_number)
@@ -9,15 +9,26 @@ class Scraper
 
   def collect!
     html = open(start_url)
-    doc = Nokogiri::HTML(html)
+
+    loop do
+      doc = Nokogiri::HTML(html)
+      collect_from_page!(doc)
+      next_page = doc.xpath('//a[starts-with(@title, "Следующая страница")]')
+      break if next_page.empty?
+
+      html = open(base_url + next_page.first['href'])
+    end
+  end
+
+  private
+
+  def collect_from_page!(doc)
     @posts = doc.xpath('//div[starts-with(@id, "post_message")]')
     remove_old
     remove_quotes
     remove_without_images
     save_data!
   end
-
-  private
 
   def save_data!
     @posts.each do |post|
@@ -52,10 +63,10 @@ class Scraper
   end
 
   def thread_uri
-    '/showthread.php?p='
+    'showthread.php?p='
   end
 
   def base_url
-    'https://forumkinopoisk.ru'
+    'https://forumkinopoisk.ru/'
   end
 end

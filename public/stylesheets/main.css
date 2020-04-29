@@ -1,0 +1,17 @@
+table, th, td {
+  border: 1px solid #bbb;
+  border-collapse: collapse;
+}
+
+td {
+  padding: 4px;
+}
+
+.header {
+  background-color: #f5e898;
+  font-weight: bold;
+}
+
+.winner {
+  border: 2px solid red;
+}

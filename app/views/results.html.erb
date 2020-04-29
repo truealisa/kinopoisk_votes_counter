@@ -1,0 +1,49 @@
+<%- players = stills.includes(:player).map(&:player).uniq -%>
+<%- voters = votes.includes(:player).map(&:player).uniq -%>
+<%- max_votes_sum = stills.map { |still| still.votes.map(&:points).sum }.max -%>
+<%- winner_stills = stills.select { |still| still.votes.map(&:points).sum == max_votes_sum } -%>
+<table>
+  <th>
+    <%- voters.each do |voter| -%>
+    <td><%= voter.name -%></td>
+    <%- end -%>
+    <td>Итого</td>
+  </th>
+  <%- players.each do |player| -%>
+  <%- player_stills = stills.where(player: player) -%>
+  <%- stills_limit = player.name == theme_author ? 4 : 5 -%>
+  <%- bonus = stills_limit - player_stills.count -%>
+  <tr class="header">
+    <td><%= player.name -%></td>
+    <%- (voters.count).times do -%>
+    <td></td>
+    <%- end -%>
+    <td><%= votes.where(movie_still: player.movie_stills.pluck(:id)).pluck(:points).compact.sum + bonus-%></td>
+  </tr>
+  <%- player_stills.find_each do |still| -%>
+  <tr class="<%= 'winner' if winner_stills.include?(still) %>">
+    <td><%= still.name -%></td>
+    <%- voters.each do |voter| -%>
+    <td><%= votes.find_by(player: voter, movie_still: still)&.points -%></td>
+    <%- end -%>
+    <td><%= votes.where(movie_still: still).pluck(:points).compact.sum -%></td>
+  </tr>
+  <%- end -%>
+  <%- if player_stills.count < stills_limit %>
+  <tr>
+    <td>Бонус</td>
+    <%- voters.each do |voter| -%>
+    <td></td>
+    <%- end -%>
+    <td><%= bonus -%></td>
+  </tr>
+  <%- end %>
+  <%- end -%>
+  <tr>
+    <td></td>
+    <%- voters.each do |voter| -%>
+    <td><%= votes.where(player: voter).pluck(:points).compact.sum -%></td>
+    <%- end -%>
+    <td></td>
+  </tr>
+</table>
